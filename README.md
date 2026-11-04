@@ -49,6 +49,34 @@ A piece of text takes this path from arriving to the label a reader sees:
 6. **Audit log (`audit.py`)** writes the `content_id`, both signal scores, the combined score and the label to `logs/audit.jsonl`. This record is what `POST /appeal` later looks up.
 7. **Response** returns JSON to the writer with `content_id`, `guess`, `confidence`, `label`, `model_score` and `style_score`.
 
+### Endpoint shapes
+
+**`POST /submit`**
+
+| | Field | Type | Meaning |
+|---|---|---|---|
+| in | `text` | string, required | The writing to check. Must be non-empty. Signal one reads only the first 400 tokens (about 300 words) and ignores the rest |
+| in | `creator_id` | string, required | Who is submitting |
+| out | `content_id` | string | Unique ID for this decision, used by `/appeal` |
+| out | `guess` | `"ai"`, `"human"` or `"unsure"` | Machine-readable result |
+| out | `confidence` | float, 0–1 | The combined score, where higher means more likely AI |
+| out | `label` | string | The plain-language sentence a reader sees |
+| out | `model_score` | float, 0–1 | Signal one |
+| out | `style_score` | float, 0–1 | Signal two |
+
+Bad input returns `400` with `{"error": "<code>", "message": "<plain sentence>"}`.
+
+**`POST /appeal`**
+
+| | Field | Type | Meaning |
+|---|---|---|---|
+| in | `content_id` | string, required | The ID returned by `/submit` |
+| in | `reasoning` | string, required | Why the writer says the label is wrong |
+| out | `content_id` | string | Echoed back |
+| out | `status` | `"under_review"` | The new status |
+| out | `message` | string | Confirmation for the writer |
+
+An unknown `content_id` returns `404` with the same error shape as `/submit`. The writer's `creator_id` is not sent. The handler looks it up from the original log entry with `audit.entries_for(content_id)`.
 
 ---
 
