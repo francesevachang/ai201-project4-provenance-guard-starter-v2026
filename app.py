@@ -199,17 +199,44 @@ def submit():
     what should this do when `text` is missing, empty, or enormous? A crash on
     a malformed input is one of the most common real failures there is.
     """
-    payload = request.get_json(silent=True) or {}
+    import detector
 
-    # TODO: delete this and build the route.
+    payload = request.get_json(silent=True) or {}
+    text = payload.get("text")
+    creator_id = payload.get("creator_id")
+
+    # Refuse bad input instead of crashing.
+    if not isinstance(text, str) or not text.strip():
+        return jsonify({"error": "bad_request", "message": "text is required"}), 400
+    if not isinstance(creator_id, str) or not creator_id.strip():
+        return jsonify({"error": "bad_request", "message": "creator_id is required"}), 400
+
+    try:
+        model_score = detector.model_signal(text)
+    except ValueError as exc:  # text too short
+        return jsonify({"error": "bad_request", "message": str(exc)}), 400
+    except detector.DetectorUnavailable as exc:
+        return jsonify({"error": "detector_unavailable", "message": str(exc)}), 503
+
+    content_id = str(uuid.uuid4())
+    guess = "ai" if model_score >= 0.5 else "human"  # placeholder until scoring.py
+
+    audit.log_decision(
+        content_id=content_id,
+        creator_id=creator_id,
+        guess=guess,
+        model_score=model_score,
+        status="decided",
+    )
+
     return jsonify({
-        "error": "not_implemented",
-        "message": "POST /submit isn't built yet — see the TODO in app.py.",
-        "you_sent": {
-            "text_length": len(payload.get("text", "")),
-            "creator_id": payload.get("creator_id"),
-        },
-    }), 501
+        "content_id": content_id,
+        "guess": guess,
+        "confidence": 0.0,        # placeholder (Milestone 4)
+        "label": "placeholder",   # placeholder (Milestone 5)
+        "model_score": model_score,
+        "style_score": None,      # second signal comes later
+    })
 
 
 @app.post("/appeal")

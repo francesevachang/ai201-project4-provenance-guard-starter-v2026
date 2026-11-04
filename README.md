@@ -161,12 +161,21 @@ An unknown `content_id` returns `404` with the same error shape as `/submit`. Th
 ```bash
 $ curl -X POST http://127.0.0.1:5000/submit \
   -H "Content-Type: application/json" \
-  -d '{"text": "...", "creator_id": "..."}'
+  -d '{"text": "I went to the store on Saturday to buy some groceries. The store was busy, but I found everything I needed. Then I went home and made dinner.", "creator_id": "me"}'
 ```
 
 ```json
-
+{
+  "confidence": 0.0,
+  "content_id": "425b0de1-9b56-48d4-ad26-afe7bc1e9b21",
+  "guess": "ai",
+  "label": "placeholder",
+  "model_score": 0.8795,
+  "style_score": null
+}
 ```
+
+_(Milestone 3: confidence, label and style_score are placeholders until the second signal and scoring are added.)_
 
 **An appeal**
 
@@ -187,7 +196,22 @@ $ curl "http://127.0.0.1:5000/log?limit=3"
 ```
 
 ```json
-
+{
+  "count": 1,
+  "entries": [
+    {
+      "combined_score": null,
+      "content_id": "425b0de1-9b56-48d4-ad26-afe7bc1e9b21",
+      "creator_id": "me",
+      "guess": "ai",
+      "label": null,
+      "model_score": 0.8795,
+      "status": "decided",
+      "style_score": null,
+      "timestamp": "2026-11-04T05:14:38+00:00"
+    }
+  ]
+}
 ```
 
 ---
