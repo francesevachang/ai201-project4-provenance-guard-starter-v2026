@@ -42,61 +42,51 @@ Two things worth knowing before you pick numbers:
   a **miss**.
 
 ---
-## 1.
+## 1. False positives
 
-<!-- Your criterion. It must name a number. -->
+Of 7 pieces I wrote myself, at most 1 is labeled high-confidence AI, in each of the three trials.
 
-
-
-**Why this target:**
+**Why this target:** On a writing site a wrong accusation costs more than a missed detection, so the limit is strict. Not higher: 2 in 7 (~29%) would accuse too many real writers. Not 0: detection is imperfect and the model signal varies between trials, so 0 in all three trials is unrealistic.
 
 
 
 ---
 
-## 2.
+## 2. Score spread
 
-<!-- Your criterion. -->
+Across 5 clearly-AI and 5 clearly-human samples, the average AI score is at least 0.4 higher than the average human score, in all three trials.
 
-
-
-**Why this target:**
+**Why this target:** Not lower: the unsure band is 0.30 wide (thresholds 0.35 and 0.65), so a gap under 0.3 means typical AI and human text can't land in opposite labels; 0.4 adds margin. Not higher: 0.5+ would need roughly human 0.2 and AI 0.7, which is too ambitious for a noisy detector.
 
 
 
 ---
 
-## 3.
+## 3. Label coverage
 
-<!-- Your criterion. -->
+Across 12 test samples, each of the 3 labels (human, unsure, AI) appears at least 2 times, in all three trials.
 
-
-
-**Why this target:**
+**Why this target:** 2 shows each label is reliably reachable, not accidental, without being too strict
 
 
 
 ---
 
-## 4.
+## 4. Appeal path
 
-<!-- Your criterion. -->
+Of 10 appeals, all 10 change the item's status and appear in the log.
 
-
-
-**Why this target:**
+**Why this target:** Appeals are plain code with no model noise, so any miss is a bug, and a lost appeal means a wrongly accused writer is ignored.
 
 
 
 ---
 
-## 5.
+## 5. Bad input
 
-<!-- Your criterion. -->
+For each of 3 bad inputs (missing `text`, empty `text`, a 100,000-character `text`), `/submit` returns a 4xx error with a clear message, never a 500 or a crash, in 3 of 3 attempts each.
 
-
-
-**Why this target:**
+**Why this target:** Not lower, because bad input is plain validation code with no model noise, so any 500 is a bug.
 
 
 
