@@ -143,16 +143,12 @@ No human text was accused. The edited AI was missed: swapping stock phrases for 
 
 | Label | Score range | The exact text a reader sees |
 |---|---|---|
-| high-confidence human |  |  |
-| unsure |  |  |
-| high-confidence AI |  |  |
+| high-confidence human | 0.00 – 0.35 | "We think this was probably written by a person." |
+| unsure | 0.35 – 0.65 | "We can't tell for sure whether this was written by a person or by AI." |
+| high-confidence AI | 0.65 – 1.00 | "This looks like it may have been written with AI. We could be wrong. If you wrote it yourself, you can appeal and a person will review it." |
 
 **Why I worded the "unsure" one this way:**
-<!-- It's the hardest of the three. It has to admit uncertainty without
-     sounding like an accusation, because the person reading it may well have
-     written every word themselves. -->
-
-
+It says plainly that we don't know, and it doesn't say anything about the writer. The person reading it may have written every word themselves, so it avoids words like "suspicious" or "flagged". The AI label is the one that can hurt, so it hedges ("may have", "we could be wrong") and points to the appeal.
 
 ---
 
@@ -163,66 +159,74 @@ No human text was accused. The edited AI was missed: swapping stock phrases for 
 
 **A submission**
 
-<!-- The response needs content_id, guess, confidence, label, AND both
-     signal scores - model_score and style_score. Unit 8's tools read those
-     two off the response, so leaving them out costs you next unit's
-     diagnostics. -->
-
 ```bash
 $ curl -X POST http://127.0.0.1:5000/submit \
   -H "Content-Type: application/json" \
-  -d '{"text": "I went to the store on Saturday to buy some groceries. The store was busy, but I found everything I needed. Then I went home and made dinner.", "creator_id": "me"}'
+  -d '{"text": "Climate change is a serious problem that affects the whole world. The temperature of the Earth is rising and the weather is changing. Many countries are working to reduce the amount of carbon in the air. It is important for people to protect the environment. The future of the planet depends on the actions that people take today.", "creator_id": "me"}'
 ```
 
 ```json
 {
-  "confidence": 0.0,
-  "content_id": "425b0de1-9b56-48d4-ad26-afe7bc1e9b21",
+  "combined_score": 0.8783,
+  "confidence": 0.8783,
+  "content_id": "5ec5ed04-103b-4599-adad-9de603763f77",
   "guess": "ai",
-  "label": "placeholder",
-  "model_score": 0.8795,
-  "style_score": null
+  "label": "This looks like it may have been written with AI. We could be wrong. If you wrote it yourself, you can appeal and a person will review it.",
+  "model_score": 0.9304,
+  "style_score": 0.8262
 }
 ```
-
-_(Milestone 3: confidence, label and style_score are placeholders until the second signal and scoring are added.)_
 
 **An appeal**
 
 ```bash
 $ curl -X POST http://127.0.0.1:5000/appeal \
   -H "Content-Type: application/json" \
-  -d '{"content_id": "...", "reasoning": "..."}'
+  -d '{"content_id": "5ec5ed04-103b-4599-adad-9de603763f77", "reasoning": "I wrote this myself for a class essay."}'
 ```
 
 ```json
-
+{
+  "content_id": "5ec5ed04-103b-4599-adad-9de603763f77",
+  "message": "Thanks. Your appeal has been recorded and a person will review it.",
+  "status": "under_review"
+}
 ```
 
 **What the log shows afterwards**
 
 ```bash
-$ curl "http://127.0.0.1:5000/log?limit=3"
+$ curl "http://127.0.0.1:5000/log?limit=2"
 ```
 
 ```json
 {
-  "count": 1,
+  "count": 2,
   "entries": [
     {
-      "combined_score": null,
-      "content_id": "425b0de1-9b56-48d4-ad26-afe7bc1e9b21",
+      "combined_score": 0.8783,
+      "content_id": "5ec5ed04-103b-4599-adad-9de603763f77",
       "creator_id": "me",
       "guess": "ai",
-      "label": null,
-      "model_score": 0.8795,
+      "label": "This looks like it may have been written with AI. We could be wrong. If you wrote it yourself, you can appeal and a person will review it.",
+      "model_score": 0.9304,
       "status": "decided",
-      "style_score": null,
-      "timestamp": "2026-11-04T05:14:38+00:00"
+      "style_score": 0.8262,
+      "timestamp": "2026-11-04T23:36:11+00:00"
+    },
+    {
+      "content_id": "5ec5ed04-103b-4599-adad-9de603763f77",
+      "creator_id": "me",
+      "event": "appeal",
+      "reasoning": "I wrote this myself for a class essay.",
+      "status": "under_review",
+      "timestamp": "2026-11-04T23:37:08+00:00"
     }
   ]
 }
 ```
+
+The original decision stays as it was. The appeal is appended after it, so both are visible in order.
 
 ---
 
