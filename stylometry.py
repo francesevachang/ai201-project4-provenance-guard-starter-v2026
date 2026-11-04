@@ -34,6 +34,10 @@ import re
 import statistics
 
 
+# First person and contractions: people use them, generic AI text often doesn't.
+PERSONAL_WORDS = {"i", "me", "my", "mine", "we", "our", "us", "honestly", "ok", "lol"}
+
+
 def sentences(text: str) -> list[str]:
     """Split into sentences. Rough and good enough — given to you."""
     parts = re.split(r"(?<=[.!?])\s+", text.strip())
@@ -152,8 +156,17 @@ def style_signal(text: str) -> float:
     ttr_ai = 1 - clamp((type_token_ratio(text) - 0.5) / 0.4)    # TTR 0.9+ = human
     punct_ai = 1 - clamp(punctuation_density(text) / 0.15)      # 0.15/word+ = human
 
-    # Spread is the strongest cue, so it counts double.
-    score = 0.5 * spread_ai + 0.25 * ttr_ai + 0.25 * punct_ai
+    # Extra AI cues. Each is 0-1, higher = more AI.
+    w = words(text)
+    personal = sum(1 for x in w if x in PERSONAL_WORDS or "'" in x)
+    voice_ai = 1 - clamp(personal / (len(w) * 0.05))      # 5% personal words = human
+
+    score = (
+        0.40 * spread_ai
+        + 0.15 * ttr_ai
+        + 0.15 * punct_ai
+        + 0.30 * voice_ai
+    )
     return round(clamp(score), 4)
 
 

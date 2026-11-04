@@ -57,6 +57,12 @@ DETECTOR_MAX_TOKENS = 400
 WEIGHT_MODEL_SIGNAL = 0.5
 WEIGHT_STYLE_SIGNAL = 0.5
 
+# Disagreement rule: if the two signals differ by more than DISAGREEMENT_GAP,
+# lower the average by DISAGREEMENT_PENALTY (lean human). Wrongly accusing a
+# writer costs more than missing some AI text.
+DISAGREEMENT_GAP = 0.4
+DISAGREEMENT_PENALTY = 0.1
+
 
 # ─── Thresholds (Milestone 5) ────────────────────────────────────────────────
 # Where one label becomes another. Scores run 0.0 (confidently human) to 1.0

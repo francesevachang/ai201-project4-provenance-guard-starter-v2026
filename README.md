@@ -98,7 +98,7 @@ An unknown `content_id` returns `404` with the same error shape as `/submit`. Th
 
 ### Signal two — the style signal
 
-**What it measures:** The shape of the text, with no reading at all. It uses sentence-length spread, vocabulary variety (type-token ratio) and punctuation density. It never looks at what the words mean.
+**What it measures:** The shape of the text, without reading it: sentence-length spread (weight 0.40), vocabulary variety (0.15), punctuation density (0.15), and personal voice, meaning first-person words and contractions (0.30). Text under 15 words or 2 sentences scores a neutral 0.5.
 
 **Why that might differ between human and AI writing:** AI prose tends toward even, mid-length sentences and a narrow vocabulary. Human writing is lumpier, with a three-word sentence next to a forty-word one.
 
@@ -109,9 +109,9 @@ An unknown `content_id` returns `404` with the same error shape as `/submit`. Th
 <!-- Write the rule in words, then give the numbers. What happens when the two
      signals disagree? -->
 
-**The rule:**
+**The rule:** Average the two signals. If they differ by more than 0.4, subtract 0.1, so a split leans "human". Wrongly accusing a writer costs more than missing AI text.
 
-**The numbers:**
+**The numbers:** weights 0.5 / 0.5, gap 0.4, penalty 0.1 (in `config.py`). My first version used the lower score on a split, but one weak signal then dragged everything down and no text could reach the AI label.
 
 **Where it lives:** `scoring.py::combine_signals`
 
@@ -120,6 +120,16 @@ An unknown `content_id` returns `404` with the same error shape as `/submit`. Th
 
 **A case where my two signals split, and what my rule does with it:**
 
+A polished AI paragraph scored model 0.76 but style 0.38, because the style signal read its varied vocabulary as human. The gap is under 0.4, so the rule averages them to **0.57** ("unsure").
+
+| Input | model | style | combined |
+|---|---|---|---|
+| Clearly AI | 0.76 | 0.38 | 0.57 |
+| Clearly human | 0.09 | 0.08 | 0.08 |
+| Formal human | 0.47 | 0.20 | 0.34 |
+| Lightly-edited AI | 0.36 | 0.04 | 0.20 |
+
+No human text was accused. The edited AI was missed: swapping stock phrases for first-person words fools the style signal.
 
 
 ---
