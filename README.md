@@ -41,9 +41,9 @@
 
 A piece of text takes this path from arriving to the label a reader sees:
 
-1. **`POST /submit` (`app.py`)** receives `{text, creator_id}`. It rejects missing, empty or oversized input and assigns a `content_id`.
+1. **`POST /submit` (`app.py`)** receives `{text, creator_id}`. It rejects missing, empty or too-short text and assigns a `content_id`. Long text is accepted, but only the first 400 tokens are scored.
 2. **Model signal (`detector.py`)** runs the text through a local GPT-2 and adds `model_score`, which measures how predictable the text is.
-3. **Style signal (`stylometry.py`)** measures sentence-length spread, vocabulary repetition and punctuation, and adds `style_score`.
+3. **Style signal (`stylometry.py`)** measures sentence-length spread, vocabulary repetition, punctuation and personal voice (first-person words and contractions), and adds `style_score`.
 4. **Combining rule (`scoring.py::combine_signals`)** merges the two scores into one 0–1 score, where higher means more likely AI.
 5. **Labeller (`scoring.py::score_to_label`)** compares that score to the thresholds in `config.py` and adds a guess (`ai`, `human` or `unsure`) and a plain-language sentence for the reader.
 6. **Audit log (`audit.py`)** writes the `content_id`, both signal scores, the combined score and the label to `logs/audit.jsonl`. This record is what `POST /appeal` later looks up.
@@ -234,15 +234,15 @@ The original decision stays as it was. The appeal is appended after it, so both 
 
 **Moment 1**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* A combining rule for my two signals that avoids falsely accusing writers.
+- *What came back:* "Use the lower score when the signals differ by more than 0.4."
+- *What I changed:* I ran it on four test inputs and nothing reached the AI label, because the weak style signal dragged every score down. I replaced it with the average minus 0.1 on a split.
 
 **Moment 2**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* A fix for my style signal, which scored obvious AI text as human.
+- *What came back:* Extra checks, including a list of stock AI phrases.
+- *What I changed:* I removed the stock-phrase check. I kept the personal-voice check and reweighted the other measures.
 
 <!-- ═══════════════════════ UNIT 8 — THE TEST ═══════════════════════ -->
 
