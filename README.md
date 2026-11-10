@@ -250,25 +250,29 @@ The original decision stays as it was. The appeal is appended after it, so both 
 
 ## Rate Limiting
 
-**My limits:** ___ per minute, ___ per day
+**My limits:** 10 per minute, 200 per day
 
 **Why those numbers and not others:**
-<!-- Think about two people: a real writer submitting their own work a few
-     times an hour, and a script sending a thousand variations to map your
-     thresholds. Your numbers have to be liveable for the first and hostile to
-     the second. -->
+A writer revising their work rarely submits more than 3–5 times a minute, so 10
+leaves room. A script mapping my thresholds needs hundreds of inputs: 10/minute
+throttles it fast, and 200/day stops it from just sending slowly all day.
 
-**What a caller counts as:** <!-- per address, or per creator_id? They fail
-differently — one script can look like a thousand callers, and one household
-can look like one. -->
+**What a caller counts as:** Per `creator_id`, falling back to IP address when
+there isn't one. People sharing a network don't share a limit. The weakness is
+that `creator_id` is self-reported, so a script can send a new one each time and
+dodge the limit. Per-IP would catch that, but would lump together everyone
+behind one shared address.
 
 **The run of status codes when I pushed past it:**
 
 <!-- python run_attacks.py --flood 15 -->
 
 ```
-
+200 200 200 200 200 200 200 200 200 200 429 429 429 429 429
 ```
+
+All 5 rejections are logged in `logs/audit.jsonl` with `"status": "rejected"`
+and `"reason": "rate_limited"`.
 
 ---
 

@@ -151,7 +151,7 @@ def health():
 # ── YOU BUILD THIS ────────────────────────────────────────────────────────────
 
 @app.post("/submit")
-# @limiter.limit(f"{config.RATE_LIMIT_PER_MINUTE}/minute;{config.RATE_LIMIT_PER_DAY}/day")
+@limiter.limit(f"{config.RATE_LIMIT_PER_MINUTE}/minute;{config.RATE_LIMIT_PER_DAY}/day")
 def submit():
     """
     Take a piece of text, decide about it, log the decision, answer.
@@ -207,17 +207,24 @@ def submit():
     text = payload.get("text")
     creator_id = payload.get("creator_id")
 
-    # Refuse bad input instead of crashing.
+    # Refuse bad input instead of crashing — and log every refusal, so an
+    # attack made of bad requests still leaves a trace.
+    log_creator = creator_id if isinstance(creator_id, str) and creator_id.strip() else "unknown"
+
     if not isinstance(text, str) or not text.strip():
+        audit.log_rejection(creator_id=log_creator, reason="text is required", http_status=400)
         return jsonify({"error": "bad_request", "message": "text is required"}), 400
     if not isinstance(creator_id, str) or not creator_id.strip():
+        audit.log_rejection(creator_id=log_creator, reason="creator_id is required", http_status=400)
         return jsonify({"error": "bad_request", "message": "creator_id is required"}), 400
 
     try:
         model_score = detector.model_signal(text)
     except ValueError as exc:  # text too short
+        audit.log_rejection(creator_id=log_creator, reason=str(exc), http_status=400)
         return jsonify({"error": "bad_request", "message": str(exc)}), 400
     except detector.DetectorUnavailable as exc:
+        audit.log_rejection(creator_id=log_creator, reason=f"detector unavailable: {exc}", http_status=503)
         return jsonify({"error": "detector_unavailable", "message": str(exc)}), 503
 
     content_id = str(uuid.uuid4())
