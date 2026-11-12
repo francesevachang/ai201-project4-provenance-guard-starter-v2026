@@ -380,17 +380,94 @@ caught the same way.
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |
+| 1. My own writing labeled AI | ≤ 1 of 7 | 0/7 | 0/7 | 0/7 | MET |
+| 2. Average AI score minus average human score | ≥ 0.40 | 0.315 | 0.315 | 0.315 | MISSED |
+| 3. Each label appears at least twice in 12 | 3 of 3 labels | 3/3 | 3/3 | 3/3 | MET |
+| 4. Appeals change status and are logged | 10 of 10 | 10/10 | 10/10 | 10/10 | MET |
+| 5. Bad input returns a 4xx, never a 500 | 3 of 3 | 2/3 | 2/3 | 2/3 | MISSED |
 
 **Real output from one trial**, pasted as text, naming the file and function
 that produced it:
 
-```json
+**Criterion 1: my own writing.** `results/run_2026-11-09_2109_before.md`, produced by `run_eval.py::main` → `app.py::submit` (trial 1):
 
+```json
+[
+  {"status": 200, "guess": "unsure", "confidence": 0.527, "model_score": 0.3931, "style_score": 0.6608, "sent": "The fish caught by Messrs. Sauvage and Morrisot can be interpreted as "},
+  {"status": 200, "guess": "unsure", "confidence": 0.4528, "model_score": 0.2974, "style_score": 0.6082, "sent": "I consider him to be a cruel character because he tells jokes which mi"},
+  {"status": 200, "guess": "unsure", "confidence": 0.5381, "model_score": 0.5036, "style_score": 0.5725, "sent": "Reality television should not be banned. One of the reasons is that th"},
+  {"status": 200, "guess": "human", "confidence": 0.203, "model_score": 0.2664, "style_score": 0.1395, "sent": "The experience sparked my interest in getting involved in various acti"},
+  {"status": 200, "guess": "unsure", "confidence": 0.3604, "model_score": 0.4392, "style_score": 0.2817, "sent": "To resist fear of failure, embrace your weaknesses and always remind y"},
+  {"status": 200, "guess": "unsure", "confidence": 0.5998, "model_score": 0.7643, "style_score": 0.4353, "sent": "Ideally, a student lounge includes one or two sofas. It would also be "},
+  {"status": 200, "guess": "unsure", "confidence": 0.4956, "model_score": 0.5962, "style_score": 0.395, "sent": "During my internship at Brilltek, a Taiwanese company specializing in "}
+]
+```
+
+**Criterion 2: score spread.** Same file and function (trial 1). AI samples, then human samples:
+
+```json
+[
+  {"status": 200, "guess": "unsure", "confidence": 0.6305, "model_score": 0.7063, "style_score": 0.5548, "sent": "Remote work has fundamentally reshaped the modern workplace, offering "},
+  {"status": 200, "guess": "ai", "confidence": 0.7603, "model_score": 0.9239, "style_score": 0.5967, "sent": "Regular physical activity is one of the most important things people c"},
+  {"status": 200, "guess": "ai", "confidence": 0.7426, "model_score": 0.9329, "style_score": 0.5523, "sent": "Climate change represents one of the most pressing challenges facing h"},
+  {"status": 200, "guess": "unsure", "confidence": 0.5888, "model_score": 0.7744, "style_score": 0.4032, "sent": "Reading offers numerous benefits that extend far beyond simple enterta"},
+  {"status": 200, "guess": "ai", "confidence": 0.7508, "model_score": 0.8494, "style_score": 0.6521, "sent": "Effective time management is an essential skill for achieving both per"}
+]
+```
+```json
+[
+  {"status": 200, "guess": "unsure", "confidence": 0.5309, "model_score": 0.6726, "style_score": 0.3891, "sent": "This is a really helpful insight and it’s also applicable to other thi"},
+  {"status": 200, "guess": "unsure", "confidence": 0.5602, "model_score": 0.4325, "style_score": 0.688, "sent": "Just an FYI, this isn’t specifically scientifically supported but more"},
+  {"status": 200, "guess": "human", "confidence": 0.3131, "model_score": 0.63, "style_score": 0.1962, "sent": "I am an emotional person by nature; however, I’m working on creating t"},
+  {"status": 200, "guess": "human", "confidence": 0.3408, "model_score": 0.7133, "style_score": 0.1683, "sent": "I am so broke. I have a work study job and I'm interviewing for anothe"},
+  {"status": 200, "guess": "human", "confidence": 0.1553, "model_score": 0.4827, "style_score": 0.0279, "sent": "So I think it would be useful to better understand economics. I like s"}
+]
+```
+
+**Criterion 3: label coverage.** Same file and function (trial 1):
+
+```json
+[
+  {"status": 200, "guess": "unsure", "confidence": 0.6305, "model_score": 0.7063, "style_score": 0.5548, "sent": "Remote work has fundamentally reshaped the modern workplace, offering "},
+  {"status": 200, "guess": "ai", "confidence": 0.7603, "model_score": 0.9239, "style_score": 0.5967, "sent": "Regular physical activity is one of the most important things people c"},
+  {"status": 200, "guess": "ai", "confidence": 0.7426, "model_score": 0.9329, "style_score": 0.5523, "sent": "Climate change represents one of the most pressing challenges facing h"},
+  {"status": 200, "guess": "unsure", "confidence": 0.5888, "model_score": 0.7744, "style_score": 0.4032, "sent": "Reading offers numerous benefits that extend far beyond simple enterta"},
+  {"status": 200, "guess": "ai", "confidence": 0.7508, "model_score": 0.8494, "style_score": 0.6521, "sent": "Effective time management is an essential skill for achieving both per"},
+  {"status": 200, "guess": "unsure", "confidence": 0.5309, "model_score": 0.6726, "style_score": 0.3891, "sent": "This is a really helpful insight and it’s also applicable to other thi"},
+  {"status": 200, "guess": "unsure", "confidence": 0.5602, "model_score": 0.4325, "style_score": 0.688, "sent": "Just an FYI, this isn’t specifically scientifically supported but more"},
+  {"status": 200, "guess": "human", "confidence": 0.3131, "model_score": 0.63, "style_score": 0.1962, "sent": "I am an emotional person by nature; however, I’m working on creating t"},
+  {"status": 200, "guess": "human", "confidence": 0.3408, "model_score": 0.7133, "style_score": 0.1683, "sent": "I am so broke. I have a work study job and I'm interviewing for anothe"},
+  {"status": 200, "guess": "human", "confidence": 0.1553, "model_score": 0.4827, "style_score": 0.0279, "sent": "So I think it would be useful to better understand economics. I like s"},
+  {"status": 200, "guess": "unsure", "confidence": 0.5998, "model_score": 0.7643, "style_score": 0.4353, "sent": "Ideally, a student lounge includes one or two sofas. It would also be "},
+  {"status": 200, "guess": "unsure", "confidence": 0.4956, "model_score": 0.5962, "style_score": 0.395, "sent": "During my internship at Brilltek, a Taiwanese company specializing in "}
+]
+```
+
+**Criterion 4: appeal path.** `results/appeals_2026-11-09_2101_before.md`, produced by `run_appeals.py::run_trial` → `app.py::submit`, `app.py::appeal`, `app.py::get_log` (trial 1). `run_eval.py` only sends text, so I wrote `run_appeals.py` to submit, appeal, and check the log:
+
+```json
+[
+  {"n": 1, "submit_status": 200, "content_id": "03d2ffc9-d6f5-484b-b9ed-e8e9bac4d3fe", "original_status": "decided", "appeal_status": 200, "response_status": "under_review", "logged_status": "under_review", "passed": true},
+  {"n": 2, "submit_status": 200, "content_id": "07c9bc3c-e290-4537-bcac-40ec202d0ae7", "original_status": "decided", "appeal_status": 200, "response_status": "under_review", "logged_status": "under_review", "passed": true},
+  {"n": 3, "submit_status": 200, "content_id": "aafbb7ee-389b-4242-8e19-44c806245532", "original_status": "decided", "appeal_status": 200, "response_status": "under_review", "logged_status": "under_review", "passed": true},
+  {"n": 4, "submit_status": 200, "content_id": "8d8373f4-a67a-422d-9976-f0e0af8f04ac", "original_status": "decided", "appeal_status": 200, "response_status": "under_review", "logged_status": "under_review", "passed": true},
+  {"n": 5, "submit_status": 200, "content_id": "2383cc08-59c6-4b7f-9dee-e97b88f54513", "original_status": "decided", "appeal_status": 200, "response_status": "under_review", "logged_status": "under_review", "passed": true},
+  {"n": 6, "submit_status": 200, "content_id": "da5ae3be-f5d9-400b-9afc-d1e118fe4c85", "original_status": "decided", "appeal_status": 200, "response_status": "under_review", "logged_status": "under_review", "passed": true},
+  {"n": 7, "submit_status": 200, "content_id": "22a81f62-26ae-4cbb-aed4-8874301dd23d", "original_status": "decided", "appeal_status": 200, "response_status": "under_review", "logged_status": "under_review", "passed": true},
+  {"n": 8, "submit_status": 200, "content_id": "a1ef9ac9-4120-4ef9-95f2-0ea7a9133f02", "original_status": "decided", "appeal_status": 200, "response_status": "under_review", "logged_status": "under_review", "passed": true},
+  {"n": 9, "submit_status": 200, "content_id": "c1f7be0c-0e7a-4d3b-ac38-1cb1bad7effe", "original_status": "decided", "appeal_status": 200, "response_status": "under_review", "logged_status": "under_review", "passed": true},
+  {"n": 10, "submit_status": 200, "content_id": "cbcb4103-4862-43c2-9c72-1d6dbcb4c4b2", "original_status": "decided", "appeal_status": 200, "response_status": "under_review", "logged_status": "under_review", "passed": true}
+]
+```
+
+**Criterion 5: bad input.** `results/run_2026-11-09_2109_before.md`, produced by `run_eval.py::main` → `app.py::submit` (trial 1). Missing `text`, empty `text`, 100,000-character `text`:
+
+```json
+[
+  {"status": 400, "guess": null, "confidence": null, "model_score": null, "style_score": null, "sent": "{\"creator_id\": \"eval_bad_missing\"}"},
+  {"status": 400, "guess": null, "confidence": null, "model_score": null, "style_score": null, "sent": "(empty text)"},
+  {"status": 200, "guess": "unsure", "confidence": 0.6488, "model_score": 0.9976, "style_score": 0.5, "sent": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+]
 ```
 
 **Diagnoses**
