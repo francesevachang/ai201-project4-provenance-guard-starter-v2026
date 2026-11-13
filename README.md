@@ -532,20 +532,117 @@ only closed part of the gap: 0.695 vs 0.380, a difference of 0.315.
 
 ## The Improvement
 
-**What I changed:**
+**What I changed:** Input validation in `app.py::submit`, before the signals
+run. A body that isn't a JSON object now gets a 400, and text over
+`MAX_TEXT_CHARS` (20,000 characters, new in `config.py`) gets a 413. Both are
+logged with `audit.log_rejection`.
 
-**Which diagnosis pointed at it:**
+**Which diagnosis pointed at it:** Pattern 5, the route doesn't validate input
+enough (the RQ07 crash and the criterion 5 miss).
 
 ### Attack Run — After
 
 <!-- Same format. `run_attacks.py --label after` -->
 
+`results/attack_run_2026-11-12_2124_after.md`
 
+**Before: 38 held, 18 broke. After: 39 held, 17 broke (out of 56).**
+
+| ID | Family | Before | After | Verdict before → after |
+|---|---|---|---|---|
+| EV01 | evasion | 200 human 0.335 | 200 human 0.335 | **BROKE** → **BROKE** |
+| EV02 | evasion | 200 unsure 0.514 | 200 unsure 0.514 | **BROKE** → **BROKE** |
+| EV03 | evasion | 200 unsure 0.499 | 200 unsure 0.499 | **BROKE** → **BROKE** |
+| EV04 | evasion | 200 unsure 0.649 | 200 unsure 0.649 | **BROKE** → **BROKE** |
+| EV05 | evasion | 200 human 0.331 | 200 human 0.331 | **BROKE** → **BROKE** |
+| EV06 | evasion | 200 unsure 0.523 | 200 unsure 0.523 | **BROKE** → **BROKE** |
+| EV07 | evasion | 200 unsure 0.543 | 200 unsure 0.543 | **BROKE** → **BROKE** |
+| EV08 | evasion | 200 unsure 0.373 | 200 unsure 0.373 | **BROKE** → **BROKE** |
+| EV09 | evasion | 200 unsure 0.369 | 200 unsure 0.369 | **BROKE** → **BROKE** |
+| EV10 | evasion | 200 ai 0.858 | 200 ai 0.858 | HELD → HELD |
+| FP01 | false_positive | 200 unsure 0.457 | 200 unsure 0.457 | HELD → HELD |
+| FP02 | false_positive | 200 ai 0.743 | 200 ai 0.743 | **BROKE** → **BROKE** |
+| FP03 | false_positive | 200 unsure 0.501 | 200 unsure 0.501 | HELD → HELD |
+| FP04 | false_positive | 200 ai 0.729 | 200 ai 0.729 | **BROKE** → **BROKE** |
+| FP05 | false_positive | 200 ai 0.778 | 200 ai 0.778 | **BROKE** → **BROKE** |
+| FP06 | false_positive | 200 unsure 0.466 | 200 unsure 0.466 | HELD → HELD |
+| FP07 | false_positive | 200 unsure 0.474 | 200 unsure 0.474 | HELD → HELD |
+| FP08 | false_positive | 200 unsure 0.411 | 200 unsure 0.411 | HELD → HELD |
+| PI01 | prompt_injection | 200 unsure 0.456 | 200 unsure 0.456 | **BROKE** → **BROKE** |
+| PI02 | prompt_injection | 200 human 0.305 | 200 human 0.305 | **BROKE** → **BROKE** |
+| PI03 | prompt_injection | 200 unsure 0.526 | 200 unsure 0.526 | **BROKE** → **BROKE** |
+| PI04 | prompt_injection | 200 unsure 0.360 | 200 unsure 0.360 | HELD → HELD |
+| PI05 | prompt_injection | 200 human 0.313 | 200 human 0.313 | HELD → HELD |
+| PI06 | prompt_injection | 200 unsure 0.433 | 200 unsure 0.433 | HELD → HELD |
+| MF01 | malformed | 400 | 400 | HELD → HELD |
+| MF02 | malformed | 400 | 400 | HELD → HELD |
+| MF03 | malformed | 200 human 0.150 | 200 human 0.150 | **BROKE** → **BROKE** |
+| MF04 | malformed | 200 human 0.156 | 200 human 0.156 | **BROKE** → **BROKE** |
+| MF05 | malformed | 200 unsure 0.649 | 200 unsure 0.649 | HELD → HELD |
+| MF06 | malformed | 200 unsure 0.648 | 200 unsure 0.648 | HELD → HELD |
+| MF07 | malformed | 200 unsure 0.603 | 200 unsure 0.603 | HELD → HELD |
+| MF08 | malformed | 200 unsure 0.591 | 413 | HELD → HELD |
+| RQ01 | malformed | 400 | 400 | HELD → HELD |
+| RQ02 | malformed | 400 | 400 | HELD → HELD |
+| RQ03 | malformed | 400 | 400 | HELD → HELD |
+| RQ04 | malformed | 400 | 400 | HELD → HELD |
+| RQ05 | malformed | 400 | 400 | HELD → HELD |
+| RQ06 | malformed | 400 | 400 | HELD → HELD |
+| RQ07 | malformed | 500 | 400 | **BROKE** → HELD |
+| RQ08 | malformed | 400 | 400 | HELD → HELD |
+| RQ09 | malformed | 400 | 400 | HELD → HELD |
+| RQ10 | malformed | 400 | 400 | HELD → HELD |
+| RQ11 | malformed | 400 | 400 | HELD → HELD |
+| RQ12 | malformed | 400 | 400 | HELD → HELD |
+| FL01_01 | flood_same_creator | 200 human 0.164 | 200 human 0.164 | HELD → HELD |
+| FL01_02 | flood_same_creator | 200 human 0.164 | 200 human 0.164 | HELD → HELD |
+| FL01_03 | flood_same_creator | 200 human 0.164 | 200 human 0.164 | HELD → HELD |
+| FL01_04 | flood_same_creator | 200 human 0.164 | 200 human 0.164 | HELD → HELD |
+| FL01_05 | flood_same_creator | 200 human 0.164 | 200 human 0.164 | HELD → HELD |
+| FL01_06 | flood_same_creator | 200 human 0.164 | 200 human 0.164 | HELD → HELD |
+| FL01_07 | flood_same_creator | 200 human 0.164 | 200 human 0.164 | HELD → HELD |
+| FL01_08 | flood_same_creator | 200 human 0.164 | 200 human 0.164 | HELD → HELD |
+| FL01_09 | flood_same_creator | 200 human 0.164 | 200 human 0.164 | HELD → HELD |
+| FL01_10 | flood_same_creator | 200 human 0.164 | 200 human 0.164 | HELD → HELD |
+| FL01_11 | flood_same_creator | 429 | 429 | HELD → HELD |
+| FL01_12 | flood_same_creator | 429 | 429 | HELD → HELD |
+
+**Run log — after** (`results/run_2026-11-12_2124_after.md`,
+`results/appeals_2026-11-12_2124_after.md`)
+
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict | Before |
+|---|---|---|---|---|---|---|
+| 1. My own writing labeled AI | ≤ 1 of 7 | 0/7 | 0/7 | 0/7 | MET | MET |
+| 2. Average AI score minus average human score | ≥ 0.40 | 0.315 | 0.315 | 0.315 | MISSED | MISSED |
+| 3. Each label appears at least twice in 12 | 3 of 3 labels | 3/3 | 3/3 | 3/3 | MET | MET |
+| 4. Appeals change status and are logged | 10 of 10 | 10/10 | 10/10 | 10/10 | MET | MET |
+| 5. Bad input returns a 4xx, never a 500 | 3 of 3 | 3/3 | 3/3 | 3/3 | MET | MISSED |
+
+Criterion 5, trial 1 (`run_eval.py::main` → `app.py::submit`):
+
+```json
+[
+  {"status": 400, "guess": null, "confidence": null, "model_score": null, "style_score": null, "sent": "{\"creator_id\": \"eval_bad_missing\"}"},
+  {"status": 400, "guess": null, "confidence": null, "model_score": null, "style_score": null, "sent": "(empty text)"},
+  {"status": 413, "guess": null, "confidence": null, "model_score": null, "style_score": null, "sent": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+]
+```
 
 **Did it help, and how do I know:**
 
 <!-- Widening the unsure band usually fixes one problem and creates another.
      Reporting that trade honestly is worth full credit. -->
+
+Yes, for what it targeted. RQ07 went from a 500 to a 400 (and is now logged),
+and criterion 5 went from MISSED (2/3) to MET (3/3): the 100,000-character text
+now gets a 413. MF08 (60,000 characters) also gets a 413 now instead of a label.
+It was already marked held, so the count doesn't change.
+
+It didn't change detection at all: every other attack and every criterion 1–4
+result is identical to before, score for score. The 17 remaining broken
+attacks (patterns 1–4) are untouched. The cost is a hard cap: a real writer
+pasting more than 20,000 characters is now refused instead of scored on the
+first 400 tokens.
 
 
 

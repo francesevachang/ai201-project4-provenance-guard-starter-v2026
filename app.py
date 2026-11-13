@@ -203,7 +203,15 @@ def submit():
     import scoring
     import stylometry
 
-    payload = request.get_json(silent=True) or {}
+    payload = request.get_json(silent=True)
+
+    # Milestone 5 fix: a body that parses as JSON but isn't an object (a list,
+    # a string) has no .get() and used to crash the route with a 500.
+    if payload is not None and not isinstance(payload, dict):
+        audit.log_rejection(creator_id="unknown", reason="body must be a JSON object", http_status=400)
+        return jsonify({"error": "bad_request", "message": "body must be a JSON object"}), 400
+    payload = payload or {}
+
     text = payload.get("text")
     creator_id = payload.get("creator_id")
 
@@ -217,6 +225,13 @@ def submit():
     if not isinstance(creator_id, str) or not creator_id.strip():
         audit.log_rejection(creator_id=log_creator, reason="creator_id is required", http_status=400)
         return jsonify({"error": "bad_request", "message": "creator_id is required"}), 400
+
+    # Milestone 5 fix: the detector only reads the first DETECTOR_MAX_TOKENS,
+    # so an enormous text used to get a label for writing it never read.
+    if len(text) > config.MAX_TEXT_CHARS:
+        reason = f"text is too long (max {config.MAX_TEXT_CHARS:,} characters)"
+        audit.log_rejection(creator_id=log_creator, reason=reason, http_status=413)
+        return jsonify({"error": "too_large", "message": reason}), 413
 
     try:
         model_score = detector.model_signal(text)

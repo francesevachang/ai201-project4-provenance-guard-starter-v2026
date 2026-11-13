@@ -46,6 +46,11 @@ DETECTOR_MODEL = os.getenv("AI201_DETECTOR_MODEL", "gpt2")
 # 300 words, which is enough for the signal to mean something.
 DETECTOR_MAX_TOKENS = 400
 
+# Unit 8, Milestone 5: /submit refuses text longer than this with a 413.
+# 20,000 characters is roughly 3,000 words — a long essay fits; a 100,000-
+# character paste doesn't, and the detector would only have read the start.
+MAX_TEXT_CHARS = 20_000
+
 
 # ─── Scoring (Milestone 4) ───────────────────────────────────────────────────
 # How much each signal counts toward the combined score.
