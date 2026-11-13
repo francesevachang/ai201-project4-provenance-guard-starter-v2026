@@ -486,7 +486,47 @@ that produced it:
 
      Look for a pattern. Five failures on one signal is one problem, not five. -->
 
+All three trials were identical for every criterion, so the pipeline is stable.
+The 2 misses and 18 broken attacks come down to five patterns.
 
+**1. Signal one reads "surprising" as "human."** EV01, EV04, EV08, PI02, MF03,
+MF04. *Stage: signal one.* `model_signal` maps high perplexity to a low score.
+Typos (EV01, model 0.16), rare words (EV04, 0.61, which left the combined score
+at 0.649, just under the 0.65 AI threshold), a fake system header (PI02, 0.20),
+and junk characters (MF03/MF04, 0.00/0.01) all surprise GPT-2, so they read as
+human. EV01 targeted signal two, but signal one is what broke.
+
+**2. Shape edits pull signal two down, and the 50/50 average passes that on.**
+EV02, EV03, EV05, EV06, EV07, EV09, PI01, PI03. *Stage: signal two + combining
+rule.* `sentence_length_spread` is 40% of the style score. Broken-up sentences,
+a pasted quote, a long/short sentence pair, or a prepended paragraph or
+instruction all raise it, so style fell to 0.23–0.46 while the model stayed at
+0.46–0.70. At equal weights, the combined score drops into "unsure." EV09
+(0.70/0.23) also crossed `DISAGREEMENT_GAP`, so the −0.1 penalty pushed it to
+0.37. EV07 joins everything with semicolons, so its 97 words count as 1
+sentence, and `style_signal` falls back to a neutral 0.5 (as it also does for
+EV08, MF03 and MF04). EV05's heavy human rewrite changed the whole surface, so
+both signals read it as human (0.32/0.34).
+
+**3. Plain, formal human writing trips both signals at once.** FP02, FP04,
+FP05. *Stage: signal one + signal two.* Conventional prose is predictable
+(model 0.74–0.83), and it has even sentences and no personal words, which
+`voice_ai` (30% of style) reads as AI (style 0.63–0.75). The signals agree, so
+no disagreement penalty applies and the score lands over 0.65.
+
+**4. Signal one doesn't separate casual human writing from AI (criterion 2,
+MISSED).** *Stage: signal one.* The human posts scored model 0.43–0.71, close
+to the AI samples' 0.71–0.93, because short, common words are easy to predict.
+Signal two separated them better (style 0.03–0.39 on 4 of 5), but at 50/50 it
+only closed part of the gap: 0.695 vs 0.380, a difference of 0.315.
+
+**5. The route doesn't validate input enough.** Criterion 5 (MISSED), RQ07.
+*Stage: the route.*
+- Criterion 5: there's no maximum length. The detector silently reads the first
+  400 tokens (`DETECTOR_MAX_TOKENS`), so 100,000 characters returns a 200.
+- RQ07: `request.get_json(silent=True) or {}` returns a list when the body is a
+  JSON array, and `.get()` raises `AttributeError`, giving a 500. It also left
+  no audit entry.
 
 ---
 
