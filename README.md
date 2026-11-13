@@ -653,12 +653,40 @@ first 400 tokens.
 <!-- For each attack still getting through and each criterion still missed:
      what you'd do, and why you stopped. -->
 
+17 attacks still get through, and criterion 2 is still missed. Why I stopped
+in every case: Milestone 5 allowed one change, so I could measure it on its
+own, and I used it on input validation.
 
+- **Typos, rare words, fake headers (EV01, EV04, EV08, PI02).** Signal one reads
+  surprising text as human. *What I'd do:* treat very high perplexity as
+  "unsure" instead of "human", since real writing rarely surprises GPT-2 that
+  much.
+- **Junk text (MF03, MF04).** *What I'd do:* reject text with almost no letters
+  in the route, with a 400, before the signals run.
+- **Shape edits and prepended text (EV02, EV03, EV05, EV06, EV07, EV09, PI01,
+  PI03).** Signal two is fooled and pulls the average down. *What I'd do:*
+  lower signal two's weight (e.g. 0.5 → 0.3), and split text on semicolons so
+  one long "sentence" isn't treated as unmeasurable. *Why not yet:* a lower
+  style weight would also raise the scores of the formal human writing below.
+- **Formal human writing flagged as AI (FP02, FP04, FP05).** *What I'd do:*
+  raise the AI threshold to about 0.80. *Why not yet:* my AI samples would drop
+  to "unsure" too, and criterion 3 would go from MET to MISSED.
+- **Criterion 2 (score gap 0.315, target 0.40).** Signal one scores casual
+  human posts too high. *What I'd do:* give signal two more weight on this kind
+  of text, or try a stronger model than GPT-2. *Why not yet:* reweighting
+  conflicts with the shape-edit fix above, and I'd need more test samples to
+  pick a weight I trust.
 
 **The trade I'd make if this ran for real:**
 
 <!-- Two sentences. Fewer wrong accusations means more AI text getting through.
      Say which way you'd go and WHO PAYS FOR IT. -->
+
+I'd go toward fewer wrong accusations, by raising the AI threshold and
+treating "unsure" as "no action", because a falsely accused writer loses their
+reputation while a missed AI piece costs the site much less. The people who pay
+are the honest writers competing against AI text that now gets through, and
+the site, which has to accept that its labels catch less.
 
 
 
